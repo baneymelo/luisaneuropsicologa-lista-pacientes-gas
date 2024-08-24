@@ -18,9 +18,6 @@ namespace Module {
     export const getPatientsByDay = (sheet: Sheet, dayRange: string): string[][] => (
         sheet.getRange(dayRange)
             .getValues()
-            /*.filter(patient => {
-                return patient[8] === 1
-            })*/
     );
 
     const formatDate = (date: Date) => {
@@ -63,7 +60,6 @@ namespace Module {
     const replaceHourByDate = (data: Patient[]) => data.map(patientsDay => {
         const date = patientsDay[0][0];
         const dateString = formatDate(date);
-        //console.log(dateString)
         return patientsDay.map(patient => {
             patient.push(dateString);
             return patient;
@@ -71,34 +67,34 @@ namespace Module {
     })
 
     const groupByDocument = (data: Patient[]) => {
-        return data.reduce((patients, curPatientsDay, i) => {
-            //const patientDocument = curPatientsDay[idx][1];
-            const newPatientsDay = curPatientsDay.filter((patient, j) => {
-
-                patient[1] === patientDocument
-            });
-
-            patients.push(curPatientsDay);
-            return patients;
-        },[])
+        const patientsDocumentsGroup = data.flat().map(patientDay => patientDay[1])
+        const patientsDocuments = Array.from(new Set(patientsDocumentsGroup));
+        const patients = [];
+        for (let document of patientsDocuments) {
+            const patientsByDocument = data.flat().filter(patient => patient[1] === document);
+            const sessions = patientsByDocument.length;
+            const datesArray = patientsByDocument.map(patient => patient[3]);
+            const dates = datesArray.join('\n');
+            const patient = [patientsByDocument[0][0], document, sessions, dates];
+            patients.push(patient);
+        }
+        return patients;
     }
 
+    const valuesToString = (patients: Patient[]) => (
+        patients
+            .map(patient => [patient[0], patient[1].toString(), patient[2].toString(), patient[3]])
+    );
 
     export const depureData = (data: Patient[]) => {
         const patientsWithDaySessions = depureDayBySessions(data);
         const patientsWithDates = replaceHourByDate(patientsWithDaySessions);
         const patientsFilteredByColumns = depureByColumns(patientsWithDates);
         const patientsWithSessions = depureWithSessions(patientsFilteredByColumns);
-        //const patientsGroupByName = groupByDocument(patientsWithSessions);
-        return patientsWithSessions;
+        const patientsGroupByDocument = groupByDocument(patientsWithSessions);
+        const patientValuesToString = valuesToString(patientsGroupByDocument)
+        return patientValuesToString;
     };
-    //export const sortData = (data: Patient[]) => {}
-
-    export const patientDataToString = (data: Patient[]) => (
-       data
-           .flat()
-           .map(patientArr => patientArr.map(patient => patient.toString()))
-    );
 
     export const createDocument = (name: string) => DocumentApp.create(name)
     .getBody()

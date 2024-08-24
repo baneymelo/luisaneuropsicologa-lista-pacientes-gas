@@ -7,35 +7,39 @@ const run = () => {
     const weekTwoRanges = ["INPUT!A28:I51", "INPUT!L28:T51", "INPUT!W28:AE51", "INPUT!AH28:AP51"];
     const fortnightlyRanges = [weekOneRanges, weekTwoRanges];
     const data = spreadsSheetProcessor(spreadsSheetId, sheetName, fortnightlyRanges);
-    console.log(data)
-    //console.log(data.length)
-    const documentName = "Listado de pacientes ()"
-    //const body = documentProcessor(data, documentName);
+    const textProps = {
+        documentName: "Listado de pacientes ()",
+        headingTitle: "LISTADO DE PACIENTES"
+    }
+    const tableHeadings = ["NOMBRE", "DOCUMENTO", "SESIONES", "FECHAS DE ATENCIÓN"];
+    data.unshift(tableHeadings);
+    documentProcessor(data, textProps);
     //console.log(body)
 }
 
 
-const spreadsSheetProcessor = (spreadsSheetId: String,
-                               sheetName: String,
-                               fortnightlyRanges: String[][]
+const spreadsSheetProcessor = (spreadsSheetId: string,
+                               sheetName: string,
+                               fortnightlyRanges: string[][]
     ) => {
         const inputSheet: Sheet = Module.getInputSheet(spreadsSheetId, sheetName);
-        /*const daysWeekOne = Module.getDates(inputSheet, "INPUT!A1:AP1");
-        const daysWeekTwo = Module.getDates(inputSheet, "INPUT!A28:AP28");
-        const dates = [daysWeekOne, daysWeekTwo];
-        const datesParsed = Module.parseDateToString(dates);
-        console.log(datesParsed)*/
         const patients = Module.getPatients(fortnightlyRanges, inputSheet);
-        //console.log(patients.data)
-        //const patientsData = Module.patientDataToString(patients.data);
         const depuredData = Module.depureData(patients.data);
-        //const sortedData = Module.sortData(depuredData);
         return depuredData;
 }
 
-const documentProcessor = (data: string[][], name: string) => {
-    const doc = Module.createDocument(name);
-    return doc.appendTable(data);
+const documentProcessor = (data: string[][], textProps: object) => {
+    const doc = Module.createDocument(textProps.documentName);
+    const text = doc.appendParagraph(textProps.headingTitle + '\n');
+    text.setBold(true);
+    text.setFontSize(12);
+    text.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+    const table = doc.appendTable(data);
+    table.setBold(false);
+    table.setFontSize(10);
+    const footer = doc.appendParagraph('\n***PACIENTES RESALTADOS: Paciente que Semper no me permitió ingresar porque son de Salud Total');
+    footer.setBold(false);
+    footer.setFontSize(10);
 }
 
 
