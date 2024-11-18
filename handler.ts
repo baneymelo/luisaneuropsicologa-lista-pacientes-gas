@@ -1,5 +1,7 @@
 import Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 
+const doGet = () => HtmlService.createTemplateFromFile("page").evaluate();
+
 const run = () => {
     console.log("starting process...");
     const spreadsSheetId = "1ZTgWI7qjW31vuiML2ODSX0FQuo-mtQ-L0-Vd7eLw2kw";
