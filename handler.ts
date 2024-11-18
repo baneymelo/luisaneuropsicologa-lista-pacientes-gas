@@ -1,45 +1,47 @@
 import Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 
 const run = () => {
+    console.log("starting process...");
     const spreadsSheetId = "1ZTgWI7qjW31vuiML2ODSX0FQuo-mtQ-L0-Vd7eLw2kw";
     const sheetName = "INPUT";
-    const weekOneRanges = ["INPUT!A1:I24", "INPUT!L1:T24", "INPUT!W1:AE24", "INPUT!AH1:AP24"];
-    const weekTwoRanges = ["INPUT!A28:I51", "INPUT!L28:T51", "INPUT!W28:AE51", "INPUT!AH28:AP51"];
-    const fortnightlyRanges = [weekOneRanges, weekTwoRanges];
-    const data = spreadsSheetProcessor(spreadsSheetId, sheetName, fortnightlyRanges);
+    const sheetData = spreadsSheetProcessor(spreadsSheetId, sheetName);
     const textProps = {
-        documentName: "Listado de pacientes ()",
         headingTitle: "LISTADO DE PACIENTES"
     }
     const tableHeadings = ["NOMBRE", "DOCUMENTO", "SESIONES", "FECHAS DE ATENCIÓN"];
-    data.unshift(tableHeadings);
-    documentProcessor(data, textProps);
+    sheetData.table.unshift(tableHeadings);
+    documentProcessor(sheetData, textProps);
     //console.log(body)
 }
 
-
 const spreadsSheetProcessor = (spreadsSheetId: string,
-                               sheetName: string,
-                               fortnightlyRanges: string[][]
+                               sheetName: string
     ) => {
+        console.log("processing data...");
         const inputSheet: Sheet = Module.getInputSheet(spreadsSheetId, sheetName);
-        const patients = Module.getPatients(fortnightlyRanges, inputSheet);
+        const fortnightlyNotations = Module.fortnightlyNotationsBuilder(inputSheet, "TOTAL ATENCIONES");
+        const documentName = Module.getNameDocument(inputSheet, fortnightlyNotations[0], fortnightlyNotations[fortnightlyNotations.length - 1]);
+        const patients = Module.getPatients(fortnightlyNotations, inputSheet);
         const depuredData = Module.depureData(patients.data);
-        return depuredData;
+        return {
+            table: depuredData,
+            documentName
+        };
 }
 
-const documentProcessor = (data: string[][], textProps: object) => {
-    const doc = Module.createDocument(textProps.documentName);
+const documentProcessor = (sheetData: string[][], textProps: object) => {
+    const doc = Module.createDocument(sheetData.documentName);
     const text = doc.appendParagraph(textProps.headingTitle + '\n');
     text.setBold(true);
     text.setFontSize(12);
     text.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-    const table = doc.appendTable(data);
+    const table = doc.appendTable(sheetData.table);
     table.setBold(false);
     table.setFontSize(10);
-    const footer = doc.appendParagraph('\n***PACIENTES RESALTADOS: Paciente que Semper no me permitió ingresar porque son de Salud Total');
-    footer.setBold(false);
-    footer.setFontSize(10);
+    console.log("document created successfully.");
+    //const footer = doc.appendParagraph('\n***PACIENTES RESALTADOS: Paciente que Semper no me permitió ingresar porque son de Salud Total');
+    //footer.setBold(false);
+    //footer.setFontSize(10);
 }
 
 

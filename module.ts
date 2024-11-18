@@ -2,7 +2,7 @@ namespace Module {
 
     export type Patient = string[];
 
-    export const getInputSheet: Sheet = (id, sheetName) => {
+    export const getInputSheet: Sheet = (id: string, sheetName: string) => {
                const ss: SpreadsheetApp = SpreadsheetApp.openById(id);
                const inputSheet: Sheet = ss.getSheetByName(sheetName);
                return inputSheet;
@@ -20,16 +20,12 @@ namespace Module {
             .getValues()
     );
 
-    const formatDate = (date: Date) => {
+    const parseDateToString = (date: Date) => {
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0'); // Enero es 0
         const year = date.getFullYear();
         return `${day}/${month}/${year}`;
     }
-
-    const parseDateToString = (dates: Date) => (
-        dates.map(date => formatDate(date))
-    )
 
     export const getPatients = (fortnightlyRanges: String[][], inputSheet: Sheet) => (
        fortnightlyRanges.flat().reduce((patients, curRangeDay) => {
@@ -59,7 +55,7 @@ namespace Module {
 
     const replaceHourByDate = (data: Patient[]) => data.map(patientsDay => {
         const date = patientsDay[0][0];
-        const dateString = formatDate(date);
+        const dateString = parseDateToString(date);
         return patientsDay.map(patient => {
             patient.push(dateString);
             return patient;
@@ -98,4 +94,43 @@ namespace Module {
 
     export const createDocument = (name: string) => DocumentApp.create(name)
     .getBody()
+
+    const getTotalPatientsRange = (sheet: Sheet, textToFind: string) => {
+        const textFinder = sheet.createTextFinder(textToFind);
+        const totalPatients = textFinder.findAll();
+        return totalPatients;
+    }
+
+    const mergeNotations = (tl: string[], br: string[]) => (
+        tl.reduce((acc, curr, index) => {
+            acc.push(`${curr}:${br[index]}`);
+            return acc;
+        }, []));
+
+    const getNotation = (sheet: Sheet, ranges: string[]) => ranges.map(range
+        => sheet.getRange(range[0], range[1]).getA1Notation());
+
+    export const fortnightlyNotationsBuilder = (sheet: Sheet, textToFind: string) => {
+        const totalPatientsRange = getTotalPatientsRange(sheet, textToFind);
+        const bottomRightRanges = totalPatientsRange.map(totalPatientRange => [totalPatientRange.getRow(), totalPatientRange.getColumn() + 8]);
+        const topLeftRanges = totalPatientsRange.map(totalPatientRange => [totalPatientRange.getRow() - 25, totalPatientRange.getColumn()]);
+        const topLeftNotation = getNotation(sheet, topLeftRanges);
+        const bottomRightNotation = getNotation(sheet, bottomRightRanges);
+        const notations = mergeNotations(topLeftNotation, bottomRightNotation);
+        return notations;
+    }
+
+    export const getNameDocument = (sheet: Sheet, startDateNotation: string, endDateNotation: string) => {
+        const startColonIndex = startDateNotation.indexOf(":");
+        const endColonIndex = endDateNotation.indexOf(":");
+        const startDateNotationRight: string = startDateNotation.slice(0, startColonIndex);
+        const endDateNotationLeft: string = endDateNotation.slice(0, endColonIndex);
+        const startDate: string = sheet.getRange(startDateNotationRight).getValue();
+        const endDate: string = sheet.getRange(endDateNotationLeft).getValue();
+        const documentname: string = `Listado de pacientes [${parseDateToString(startDate)}] - (${parseDateToString(endDate)})]`
+        return documentname;
+    }
 }
+
+
+
