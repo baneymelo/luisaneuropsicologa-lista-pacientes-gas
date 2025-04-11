@@ -1,61 +1,323 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Lista de pacientes</title>
+    <meta charset="UTF-8" />
+    <title>luisaneuropsicologa tools</title>
     <style>
-        .btn {
-            border: none;
-            width: 15em;
-            height: 5em;
-            border-radius: 3em;
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #111927;
+            background-image: radial-gradient(
+                    at 47% 33%,
+                    hsl(162, 77%, 40%) 0,
+                    transparent 59%
+            ),
+            radial-gradient(at 82% 65%, hsl(218, 39%, 11%) 0, transparent 55%);
+        }
+
+        hr {
+            border-width: 1px;
+            border-color: #99ada5;
+            opacity: 50%;
+            margin: auto 20px;
+        }
+
+        .card {
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            background-color: rgba(17, 25, 40, 0.75);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.125);
+            margin: 20%;
+            height: 460px;
             display: flex;
-            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            justify-content: space-between;
             align-items: center;
-            gap: 12px;
-            background: #1C1A1C;
+            text-align: center;
+        }
+
+        .marginUp {
+            margin-top: 20px;
+        }
+
+        .title {
+            font-size: large;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .description {
+            font-size: small;
+            color: #bbc1e1;
+        }
+
+        .continue-application {
+            --color: #fff;
+            --background: #404660;
+            --background-hover: #3a4059;
+            --background-left: #2b3044;
+            --folder: #f3e9cb;
+            --folder-inner: #beb393;
+            --paper: #ffffff;
+            --paper-lines: #bbc1e1;
+            --paper-behind: #e1e6f9;
+            --pencil-cap: #fff;
+            --pencil-top: #275efe;
+            --pencil-middle: #fff;
+            --pencil-bottom: #5c86ff;
+            --shadow: rgba(13, 15, 25, 0.2);
+            border: none;
+            outline: none;
             cursor: pointer;
-            transition: all 450ms ease-in-out;
+            position: relative;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 19px;
+            -webkit-appearance: none;
+            -webkit-tap-highlight-color: transparent;
+            padding: 17px 29px 17px 69px;
+            transition: background 0.3s;
+            color: var(--color);
+            background: var(--bg, var(--background));
         }
 
-        .sparkle {
-            fill: #AAAAAA;
-            transition: all 800ms ease;
+        .continue-application:active {
+            background-color: #3e8e41;
+            box-shadow: 0 5px #666;
+            transform: translateY(4px);
         }
 
-        .text {
-            font-weight: 600;
-            color: #AAAAAA;
-            font-size: medium;
+        .continue-application > div {
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 53px;
+            position: absolute;
+            overflow: hidden;
+            border-radius: 5px 0 0 5px;
+            background: var(--background-left);
         }
 
-        .btn:hover {
-            background: linear-gradient(0deg,#A47CF3,#683FEA);
-            box-shadow: inset 0px 1px 0px 0px rgba(255, 255, 255, 0.4),
-            inset 0px -4px 0px 0px rgba(0, 0, 0, 0.2),
-            0px 0px 0px 4px rgba(255, 255, 255, 0.2),
-            0px 0px 180px 0px #9917FF;
-            transform: translateY(-2px);
+        .continue-application > div .folder {
+            width: 23px;
+            height: 27px;
+            position: absolute;
+            left: 15px;
+            top: 13px;
         }
 
-        .btn:hover .text {
-            color: white;
+        .continue-application > div .folder .top {
+            left: 0;
+            top: 0;
+            z-index: 2;
+            position: absolute;
+            transform: translateX(var(--fx, 0));
+            transition: transform 0.4s ease var(--fd, 0.3s);
         }
 
-        .btn:hover .sparkle {
-            fill: white;
-            transform: scale(1.2);
+        .continue-application > div .folder .top svg {
+            width: 24px;
+            height: 27px;
+            display: block;
+            fill: var(--folder);
+            transform-origin: 0 50%;
+            transition: transform 0.3s ease var(--fds, 0.45s);
+            transform: perspective(120px) rotateY(var(--fr, 0deg));
+        }
+
+        .continue-application > div .folder:before,
+        .continue-application > div .folder:after,
+        .continue-application > div .folder .paper {
+            content: "";
+            position: absolute;
+            left: var(--l, 0);
+            top: var(--t, 0);
+            width: var(--w, 100%);
+            height: var(--h, 100%);
+            border-radius: 1px;
+            background: var(--b, var(--folder-inner));
+        }
+
+        .continue-application > div .folder:before {
+            box-shadow: 0 1.5px 3px var(--shadow), 0 2.5px 5px var(--shadow),
+            0 3.5px 7px var(--shadow);
+            transform: translateX(var(--fx, 0));
+            transition: transform 0.4s ease var(--fd, 0.3s);
+        }
+
+        .continue-application > div .folder:after,
+        .continue-application > div .folder .paper {
+            --l: 1px;
+            --t: 1px;
+            --w: 21px;
+            --h: 25px;
+            --b: var(--paper-behind);
+        }
+
+        .continue-application > div .folder:after {
+            transform: translate(var(--pbx, 0), var(--pby, 0));
+            transition: transform 0.4s ease var(--pbd, 0s);
+        }
+
+        .continue-application > div .folder .paper {
+            z-index: 1;
+            --b: var(--paper);
+        }
+
+        .continue-application > div .folder .paper:before,
+        .continue-application > div .folder .paper:after {
+            content: "";
+            width: var(--wp, 14px);
+            height: 2px;
+            border-radius: 1px;
+            transform: scaleY(0.5);
+            left: 3px;
+            top: var(--tp, 3px);
+            position: absolute;
+            background: var(--paper-lines);
+            box-shadow: 0 12px 0 0 var(--paper-lines), 0 24px 0 0 var(--paper-lines);
+        }
+
+        .continue-application > div .folder .paper:after {
+            --tp: 6px;
+            --wp: 10px;
+        }
+
+        .continue-application > div .pencil {
+            height: 2px;
+            width: 3px;
+            border-radius: 1px 1px 0 0;
+            top: 8px;
+            left: 105%;
+            position: absolute;
+            z-index: 3;
+            transform-origin: 50% 19px;
+            background: var(--pencil-cap);
+            transform: translateX(var(--pex, 0)) rotate(35deg);
+            transition: transform 0.4s ease var(--pbd, 0s);
+        }
+
+        .continue-application > div .pencil:before,
+        .continue-application > div .pencil:after {
+            content: "";
+            position: absolute;
+            display: block;
+            background: var(
+                    --b,
+                    linear-gradient(
+                            var(--pencil-top) 55%,
+                            var(--pencil-middle) 55.1%,
+                            var(--pencil-middle) 60%,
+                            var(--pencil-bottom) 60.1%
+                    )
+            );
+            width: var(--w, 5px);
+            height: var(--h, 20px);
+            border-radius: var(--br, 2px 2px 0 0);
+            top: var(--t, 2px);
+            left: var(--l, -1px);
+        }
+
+        .continue-application > div .pencil:before {
+            -webkit-clip-path: polygon(0 5%, 5px 5%, 5px 17px, 50% 20px, 0 17px);
+            clip-path: polygon(0 5%, 5px 5%, 5px 17px, 50% 20px, 0 17px);
+        }
+
+        .continue-application > div .pencil:after {
+            --b: none;
+            --w: 3px;
+            --h: 6px;
+            --br: 0 2px 1px 0;
+            --t: 3px;
+            --l: 3px;
+            border-top: 1px solid var(--pencil-top);
+            border-right: 1px solid var(--pencil-top);
+        }
+
+        .continue-application:before,
+        .continue-application:after {
+            content: "";
+            position: absolute;
+            width: 10px;
+            height: 2px;
+            border-radius: 1px;
+            background: var(--color);
+            transform-origin: 9px 1px;
+            transform: translateX(var(--cx, 0)) scale(0.5) rotate(var(--r, -45deg));
+            top: 26px;
+            right: 16px;
+            transition: transform 0.3s;
+        }
+
+        .continue-application:after {
+            --r: 45deg;
+        }
+
+        .continue-application:hover {
+            --cx: 2px;
+            --bg: var(--background-hover);
+            --fx: -40px;
+            --fr: -60deg;
+            --fd: 0.15s;
+            --fds: 0s;
+            --pbx: 3px;
+            --pby: -3px;
+            --pbd: 0.15s;
+            --pex: -24px;
+        }
+
+        .app-1 {
+            display: none;
+        }
+
+        .vscode-icons--file-type-word {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='vscodeIconsFileTypeWord0' x1='4.494' x2='13.832' y1='-1712.086' y2='-1695.914' gradientTransform='translate(0 1720)' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%232368c4'/%3E%3Cstop offset='.5' stop-color='%231a5dbe'/%3E%3Cstop offset='1' stop-color='%231146ac'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='%2341a5ee' d='M28.806 3H9.705a1.19 1.19 0 0 0-1.193 1.191V9.5l11.069 3.25L30 9.5V4.191A1.19 1.19 0 0 0 28.806 3'/%3E%3Cpath fill='%232b7cd3' d='M30 9.5H8.512V16l11.069 1.95L30 16Z'/%3E%3Cpath fill='%23185abd' d='M8.512 16v6.5l10.418 1.3L30 22.5V16Z'/%3E%3Cpath fill='%23103f91' d='M9.705 29h19.1A1.19 1.19 0 0 0 30 27.809V22.5H8.512v5.309A1.19 1.19 0 0 0 9.705 29'/%3E%3Cpath d='M16.434 8.2H8.512v16.25h7.922a1.2 1.2 0 0 0 1.194-1.191V9.391A1.2 1.2 0 0 0 16.434 8.2' opacity='0.1'/%3E%3Cpath d='M15.783 8.85H8.512V25.1h7.271a1.2 1.2 0 0 0 1.194-1.191V10.041a1.2 1.2 0 0 0-1.194-1.191' opacity='0.2'/%3E%3Cpath d='M15.783 8.85H8.512V23.8h7.271a1.2 1.2 0 0 0 1.194-1.191V10.041a1.2 1.2 0 0 0-1.194-1.191' opacity='0.2'/%3E%3Cpath d='M15.132 8.85h-6.62V23.8h6.62a1.2 1.2 0 0 0 1.194-1.191V10.041a1.2 1.2 0 0 0-1.194-1.191' opacity='0.2'/%3E%3Cpath fill='url(%23vscodeIconsFileTypeWord0)' d='M3.194 8.85h11.938a1.193 1.193 0 0 1 1.194 1.191v11.918a1.193 1.193 0 0 1-1.194 1.191H3.194A1.19 1.19 0 0 1 2 21.959V10.041A1.19 1.19 0 0 1 3.194 8.85'/%3E%3Cpath fill='%23fff' d='M6.9 17.988q.035.276.046.481h.028q.015-.195.065-.47c.05-.275.062-.338.089-.465l1.255-5.407h1.624l1.3 5.326a8 8 0 0 1 .162 1h.022a8 8 0 0 1 .135-.975l1.039-5.358h1.477l-1.824 7.748h-1.727l-1.237-5.126q-.054-.222-.122-.578t-.084-.52h-.021q-.021.189-.084.561t-.1.552L7.78 19.871H6.024L4.19 12.127h1.5l1.131 5.418a5 5 0 0 1 .079.443'/%3E%3C/svg%3E");
         }
     </style>
-    <script>google.script.run.run()</script>
 </head>
 <body>
-<button class="btn" onclick="google.script.run.run()">
-    <svg height="24" width="24" fill="#FFFFFF" viewBox="0 0 24 24" data-name="Layer 1" id="Layer_1" class="sparkle">
-        <path d="M10,21.236,6.755,14.745.264,11.5,6.755,8.255,10,1.764l3.245,6.491L19.736,11.5l-6.491,3.245ZM18,21l1.5,3L21,21l3-1.5L21,18l-1.5-3L18,18l-3,1.5ZM19.333,4.667,20.5,7l1.167-2.333L24,3.5,21.667,2.333,20.5,0,19.333,2.333,17,3.5Z"></path>
-    </svg>
-
-    <span class="text">Generate</span>
-</button>
+<div class="card">
+    <div class="container">
+        <div class="avatar marginUp"></div>
+        <div class="title marginUp"><span>Luisa Montoya</span></div>
+        <div class="description"><span>Neuropsicologa</span></div>
+        <hr class="marginUp" />
+        <div class="apps marginUp">
+            <div class="app">
+                <button class="continue-application" onclick="google.script.run.handler('app-1')">
+                    <div>
+                        <div class="pencil"></div>
+                        <div class="folder">
+                            <div class="top">
+                                <svg viewBox="0 0 24 27">
+                                    <path
+                                            d="M1,0 L23,0 C23.5522847,-1.01453063e-16 24,0.44771525 24,1 L24,8.17157288 C24,8.70200585 23.7892863,9.21071368 23.4142136,9.58578644 L20.5857864,12.4142136 C20.2107137,12.7892863 20,13.2979941 20,13.8284271 L20,26 C20,26.5522847 19.5522847,27 19,27 L1,27 C0.44771525,27 6.76353751e-17,26.5522847 0,26 L0,1 C-6.76353751e-17,0.44771525 0.44771525,1.01453063e-16 1,0 Z"
+                                    ></path>
+                                </svg>
+                            </div>
+                            <div class="paper"></div>
+                        </div>
+                    </div>
+                    Generar informe
+                </button>
+                <div class="app-1" id="app-1">
+                    <span class="vscode-icons--file-type-word">
+                        <a href="" target="_blank">Descargar</a>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

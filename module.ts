@@ -2,11 +2,21 @@ namespace Module {
 
     export type Patient = string[];
 
-    export const getInputSheet: Sheet = (id: string, sheetName: string) => {
+    export const getInputSheet: SpreadSheet = (id: string, sheetName: string) => {
                const ss: SpreadsheetApp = SpreadsheetApp.openById(id);
                const inputSheet: Sheet = ss.getSheetByName(sheetName);
-               return inputSheet;
+               return inputSheet.getParent();
     }
+
+    export const getDataValues: Ranges  = (ss: SpreadSheet) => {
+        const ranges = ss.getDataRange();
+        return ranges.getValues();
+    }
+
+    /*export const getTotalTables = (values: string[]) => {
+        const totalTables = values.filter(curRow => curRow[])
+        return totalTables;
+    }*/
 
     export const getDates = (sheet, range) => {
         return sheet.getRange(range)
@@ -92,8 +102,7 @@ namespace Module {
         return patientValuesToString;
     };
 
-    export const createDocument = (name: string) => DocumentApp.create(name)
-    .getBody()
+    export const createDocument = (name: string) => DocumentApp.create(name);
 
     const getTotalPatientsRange = (sheet: Sheet, textToFind: string) => {
         const textFinder = sheet.createTextFinder(textToFind);
@@ -107,8 +116,7 @@ namespace Module {
             return acc;
         }, []));
 
-    const getNotation = (sheet: Sheet, ranges: string[]) => ranges.map(range
-        => sheet.getRange(range[0], range[1]).getA1Notation());
+    const getNotation = (sheet: Sheet, ranges: string[]) => ranges.map(range => sheet.getRange(range[0], range[1]).getA1Notation());
 
     export const fortnightlyNotationsBuilder = (sheet: Sheet, textToFind: string) => {
         const totalPatientsRange = getTotalPatientsRange(sheet, textToFind);
@@ -129,6 +137,54 @@ namespace Module {
         const endDate: string = sheet.getRange(endDateNotationLeft).getValue();
         const documentname: string = `Listado de pacientes [${parseDateToString(startDate)}] - (${parseDateToString(endDate)})]`
         return documentname;
+    }
+
+    interface IDriveBuilder {
+        builder: () => DriveBuilder;
+        build: () => Drive;
+    }
+
+    export class DriveBuilder implements IDriveBuilder {
+        private driveApp: DriveApp;
+        private id: string;
+
+        builder(): DriveBuilder {
+            return new DriveBuilder();
+        }
+
+        getDriveApp = (): DriveApp => {
+            return this.driveApp;
+        }
+
+        setDriveApp = (driveApp: DriveApp): DriveBuilder => {
+            this.driverApp = driveApp;
+            return this;
+        }
+
+        setId = (id: string): void => {
+
+        }
+
+        build(): Drive {
+            return new Drive(this);
+        }
+
+    }
+
+    interface IDrive {
+        download: () => void;
+    }
+
+    export class Drive implements IDrive {
+        private file: Drive;
+
+        constructor(private driveBuilder: DriveBuilder) {
+            this.file = driveBuilder.driveApp.getFileById(driveBuilder.getId);
+        }
+
+        download(): void {
+            return this.file.getDownloadUrl();
+        }
     }
 }
 
