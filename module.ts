@@ -1,6 +1,43 @@
 
 namespace Module {
 
+    export const createTable = (data: Array<Array<string>>, limits: { x: number, y: number }) => {
+        const tempData = data.slice(limits.y - 1);
+        return tempData.map((row, idx) => {
+            return row.slice(0, limits.x + 1);
+        })
+    }
+
+    export const transpose = (data: Array<Array<string>>): Array<Array<string>> => (
+        data.reduce((prev, next) =>
+            next.map((item, i) =>
+                (prev[i] || []).concat(next[i])
+            ), [])
+    )
+
+    //type Data = Array<Array<string>
+    type TotalSesions = { count: number, xy: Array<Array<string>> };
+    export const getTotalSesionsXY = (data: Array<Array<string>>): TotalSesions => {
+            return data.reduce((acc, row) => {
+                acc.count++;
+                const accRow = recursiveBase("TOTAL SESIONES", 0, row, []);
+                if(accRow.length !== 0) {
+                    acc.x.push([...accRow]);
+                    acc.y.push([acc.count - 1]);
+                }
+                return acc;
+            }, { count: 0, x: [], y: [] })
+    }
+
+    const recursiveBase = (word, idx, arr, acc = []) => {
+        const i = arr.indexOf(word, idx);
+        if(i !== -1) {
+            acc.push(i);
+            return recursiveBase(word, i + 1, arr, acc);
+        }
+        return acc;
+    }
+
     export type Patient = string[];
 
     export const getInputSheet: SpreadSheet = (id: string, sheetName: string) => {

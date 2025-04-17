@@ -31,61 +31,46 @@ const listadoPacientes = () => {
 const spreadsSheetProcessor = (spreadsSheetId: string,
                                sheetName: string
     ) => {
-        console.log("processing data...");
-        const inputSheet: SpreadSheet = Module.getInputSheet(spreadsSheetId, sheetName);
-        const dataValues = Module.getDataValues(inputSheet);
+    console.log("processing data...");
+    const inputSheet: SpreadSheet = Module.getInputSheet(spreadsSheetId, sheetName);
+    const values = Module.getDataValues(inputSheet);
 
-        // recursividad
-        const recursiveBase = (word, idx, arr, acc) => {
-            const i = arr.indexOf(word, idx);
-            if(i !== -1) {
-                acc.push(i);
-                return recursiveBase(word, i + 1, arr, acc);
-            }
-            return acc;
-        }
+    // dataValues
+    //console.log(values[5])
 
-        const reduce = dataValues.reduce((acc, row) => {
-            acc.count++;
-            const accRow = recursiveBase("TOTAL SESIONES", 0, row, []);
-            if(accRow.length !== 0) {
-                acc.xy.push([acc.count - 1]);
-                acc.xy.push([...accRow]);
-                //acc.count = 0;
-            }
-            return acc;
-        }, { count:0, xy:[] })
+    const totalSesionsXY = Module.getTotalSesionsXY(values);
+    const limits = {
+        x: totalSesionsXY.x.flat().at(0),
+        y: totalSesionsXY.y.flat().at(0)
+    }
+    const tableOne = Module.createTable(values, limits);
+    console.log(tableOne)
+
+    // transposing dataValues
+    const transposed = Module.transpose(values);
+
+    //console.log(transposed[0]);
+
+    const { xy } = totalSesionsXY;
+    //const table = xy.slice(0, 1);
 
 
-        const { xy } = reduce;
-        const table = xy.slice(0, 1);
-        dataValues.forEach((row, idx) => {
-
-        })
-        console.log(reduce)
-
-
-        //console.log(dataValues[][52])
-        /*const fortnightlyNotations = Module.fortnightlyNotationsBuilder(inputSheet, "TOTAL ATENCIONES");
-        const documentName = Module.getNameDocument(inputSheet, fortnightlyNotations[0], fortnightlyNotations[fortnightlyNotations.length - 1]);
-        const patients = Module.getPatients(fortnightlyNotations, inputSheet);
-        const depuredData = Module.depureData(patients.data);
-        return {
-            table: depuredData,
-            documentName
-        };*/
+    /*const fortnightlyNotations = Module.fortnightlyNotationsBuilder(inputSheet, "TOTAL ATENCIONES");
+    const documentName = Module.getNameDocument(inputSheet, fortnightlyNotations[0], fortnightlyNotations[fortnightlyNotations.length - 1]);
+    const patients = Module.getPatients(fortnightlyNotations, inputSheet);
+    const depuredData = Module.depureData(patients.data);
+    return {
+        table: depuredData,
+        documentName
+    };*/
 }
 
 
 /*
-* 1. get spreadsheet range.
+* 1. get values.
 * 2. sort data.
-*    get X index HORA & TOTAL SESIONES. set DATE.
-*    get Y index TOTAL ATENCIONES.
-*    set object with: date,
+*    get XY index of TOTAL SESIONES.
 * 3.
-*
-*
 * */
 
 const documentProcessor = (sheetData: string[][], textProps: object): Blob => {
