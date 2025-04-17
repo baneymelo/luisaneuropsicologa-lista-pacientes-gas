@@ -1,8 +1,5 @@
-import * as ranges from "resources/data"
 
 namespace Module {
-
-    export const getData = () => ranges;
 
     export type Patient = string[];
 

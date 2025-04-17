@@ -22,8 +22,8 @@ const listadoPacientes = () => {
     const textProps = {
         headingTitle: "LISTADO DE PACIENTES"
     }
-    /*const tableHeadings = ["NOMBRE", "DOCUMENTO", "FECHA DE AGENDAMIENTO", "TOTAL SESIONES"];
-    sheetData.table.unshift(tableHeadings);
+    const tableHeadings = ["NOMBRE", "DOCUMENTO", "FECHA DE AGENDAMIENTO", "TOTAL SESIONES"];
+    /*sheetData.table.unshift(tableHeadings);
     const doc = documentProcessor(sheetData, textProps);
     gmailProcessor(doc);*/
 }
@@ -33,34 +33,36 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
     ) => {
         console.log("processing data...");
         const inputSheet: SpreadSheet = Module.getInputSheet(spreadsSheetId, sheetName);
-        //console.log(Module.getData())
         const dataValues = Module.getDataValues(inputSheet);
 
         // recursividad
-        const trail = (word, idx, arr, acc) => {
+        const recursiveBase = (word, idx, arr, acc) => {
             const i = arr.indexOf(word, idx);
             if(i !== -1) {
                 acc.push(i);
-                return trail(word, i + 1, arr, acc);
+                return recursiveBase(word, i + 1, arr, acc);
             }
             return acc;
         }
 
         const reduce = dataValues.reduce((acc, row) => {
             acc.count++;
-            const accRow = trail("TOTAL SESIONES", 0, row, []);
+            const accRow = recursiveBase("TOTAL SESIONES", 0, row, []);
             if(accRow.length !== 0) {
                 acc.xy.push([acc.count - 1]);
                 acc.xy.push([...accRow]);
-                acc.count = 0;
+                //acc.count = 0;
             }
             return acc;
         }, { count:0, xy:[] })
 
-        //const  =
 
+        const { xy } = reduce;
+        const table = xy.slice(0, 1);
+        dataValues.forEach((row, idx) => {
 
-    console.log(reduce)
+        })
+        console.log(reduce)
 
 
         //console.log(dataValues[][52])
