@@ -1,5 +1,6 @@
 import Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 
+/*
 const doGet = () => HtmlService.createTemplateFromFile("page").evaluate();
 
 const handler = (app: string) => {
@@ -12,6 +13,7 @@ const handler = (app: string) => {
             return;
     }
 }
+*/
 
 const listadoPacientes = () => {
     const spreadsSheetId = "1ZTgWI7qjW31vuiML2ODSX0FQuo-mtQ-L0-Vd7eLw2kw";
@@ -31,8 +33,37 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
     ) => {
         console.log("processing data...");
         const inputSheet: SpreadSheet = Module.getInputSheet(spreadsSheetId, sheetName);
+        //console.log(Module.getData())
         const dataValues = Module.getDataValues(inputSheet);
-        console.log(dataValues[][52])
+
+        // recursividad
+        const trail = (word, idx, arr, acc) => {
+            const i = arr.indexOf(word, idx);
+            if(i !== -1) {
+                acc.push(i);
+                return trail(word, i + 1, arr, acc);
+            }
+            return acc;
+        }
+
+        const reduce = dataValues.reduce((acc, row) => {
+            acc.count++;
+            const accRow = trail("TOTAL SESIONES", 0, row, []);
+            if(accRow.length !== 0) {
+                acc.xy.push([acc.count - 1]);
+                acc.xy.push([...accRow]);
+                acc.count = 0;
+            }
+            return acc;
+        }, { count:0, xy:[] })
+
+        //const  =
+
+
+    console.log(reduce)
+
+
+        //console.log(dataValues[][52])
         /*const fortnightlyNotations = Module.fortnightlyNotationsBuilder(inputSheet, "TOTAL ATENCIONES");
         const documentName = Module.getNameDocument(inputSheet, fortnightlyNotations[0], fortnightlyNotations[fortnightlyNotations.length - 1]);
         const patients = Module.getPatients(fortnightlyNotations, inputSheet);

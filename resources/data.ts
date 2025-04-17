@@ -1,4 +1,4 @@
-export const ranges = [[ '',
+const ranges = [[ '',
   '',
   '',
   '',
@@ -142,10 +142,10 @@ export const ranges = [[ '',
     'Administración',
     new Date("Thu May 01 2025 00:00:00 GMT-0400 (Eastern Daylight Time)"),
     'PRESENCIAL',
-    new Date("Wed Mar 26 2025 00:00:00 GMT-0400 (Eastern Daylight Time)",
+    new Date("Wed Mar 26 2025 00:00:00 GMT-0400 (Eastern Daylight Time)"),
     'Leslye',
     '3194160161',
-    1 ],
+    '1' ],
   [ 'TOTAL ATENCIONES',
     '',
     '',
@@ -179,10 +179,11 @@ export const ranges = [[ '',
     '',
     '',
     '',
-    '',
-    '',
+    'TOTAL SESIONES',
+    'TOTAL SESIONES',
     '',
     '7' ]
 ]
 
 
+export default ranges;
