@@ -15,12 +15,21 @@ namespace Module {
             ), [])
     )
 
-    //type Data = Array<Array<string>
-    type TotalSesions = { count: number, xy: Array<Array<string>> };
-    export const getTotalSesionsXY = (data: Array<Array<string>>): TotalSesions => {
+    type HeadingPositions = { count: number, x: Array<Array<string>>, y: Array<Array<string>> }
+    type HeadingXY = {
+        nombre: HeadingPositions,
+        documento: HeadingPositions,
+        fechadeagendamiento: HeadingPositions,
+        totalsesiones: HeadingPositions
+    }
+    export const enrichLowerLimit = (headingsXY: HeadingXY, LOWER_LIMIT: number) => {
+
+    }
+
+    export const getHeaderXY = (data: Array<Array<string>>, headerToLookFor: string | Date) => {
             return data.reduce((acc, row) => {
                 acc.count++;
-                const accRow = recursiveBase("TOTAL SESIONES", 0, row, []);
+                const accRow = recursiveBase(headerToLookFor, 0, row, []);
                 if(accRow.length !== 0) {
                     acc.x.push([...accRow]);
                     acc.y.push([acc.count - 1]);
@@ -29,11 +38,11 @@ namespace Module {
             }, { count: 0, x: [], y: [] })
     }
 
-    const recursiveBase = (word, idx, arr, acc = []) => {
-        const i = arr.indexOf(word, idx);
+    const recursiveBase = (headerToLookFor, idx, row, acc) => {
+        const i = row.indexOf(headerToLookFor, idx);
         if(i !== -1) {
             acc.push(i);
-            return recursiveBase(word, i + 1, arr, acc);
+            return recursiveBase(headerToLookFor, i + 1, row, acc);
         }
         return acc;
     }

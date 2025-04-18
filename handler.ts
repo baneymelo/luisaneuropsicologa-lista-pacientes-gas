@@ -18,41 +18,55 @@ const handler = (app: string) => {
 const listadoPacientes = () => {
     const spreadsSheetId = "1ZTgWI7qjW31vuiML2ODSX0FQuo-mtQ-L0-Vd7eLw2kw";
     const sheetName = "INPUT";
-    const sheetData = spreadsSheetProcessor(spreadsSheetId, sheetName);
+    const headings = ["NOMBRE", "DOCUMENTO", "FECHA DE AGENDAMIENTO", "TOTAL SESIONES"];
+    const sheetData = spreadsSheetProcessor(spreadsSheetId, sheetName, headings);
     const textProps = {
         headingTitle: "LISTADO DE PACIENTES"
     }
-    const tableHeadings = ["NOMBRE", "DOCUMENTO", "FECHA DE AGENDAMIENTO", "TOTAL SESIONES"];
     /*sheetData.table.unshift(tableHeadings);
     const doc = documentProcessor(sheetData, textProps);
     gmailProcessor(doc);*/
 }
 
 const spreadsSheetProcessor = (spreadsSheetId: string,
-                               sheetName: string
+                               sheetName: string,
+                               headings: string,
     ) => {
-    console.log("processing data...");
+    console.log("Processor::starting..");
     const inputSheet: SpreadSheet = Module.getInputSheet(spreadsSheetId, sheetName);
     const values = Module.getDataValues(inputSheet);
 
     // dataValues
-    //console.log(values[5])
+    //console.log(values)
 
-    const totalSesionsXY = Module.getTotalSesionsXY(values);
-    const limits = {
+    const headingsXY = headings.reduce((acc, header) => {
+        const key = header.toLowerCase().replaceAll(" ","");
+        const value = Module.getHeaderXY(values, header);
+        acc[key] = value;
+        return acc;
+    }, {} );
+
+    // determinate lowe limit of each header
+    static const LOWER_LIMIT = 10;
+    const ll = Module.getHeaderXY(values, "TOTAL ATENCIONES")
+    console.log(ll)
+    //const enrichLowerLimit = Module.enrichLowerLimit(headingsXY, LOWER_LIMIT);
+    //console.log(enrichLowerLimit);
+
+    // create table of each header
+
+
+
+    /*const limits = {
         x: totalSesionsXY.x.flat().at(0),
         y: totalSesionsXY.y.flat().at(0)
-    }
-    const tableOne = Module.createTable(values, limits);
-    console.log(tableOne)
+    }*/
+    // const tableOne = Module.createTable(values, limits);
+    // console.log(tableOne)
 
     // transposing dataValues
-    const transposed = Module.transpose(values);
+    // const transposed = Module.transpose(values);
 
-    //console.log(transposed[0]);
-
-    const { xy } = totalSesionsXY;
-    //const table = xy.slice(0, 1);
 
 
     /*const fortnightlyNotations = Module.fortnightlyNotationsBuilder(inputSheet, "TOTAL ATENCIONES");
