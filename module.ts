@@ -8,25 +8,33 @@ namespace Module {
             ), [])
     )
 
+    export const getDataRange = (ranges: Array<Array<string>>, positions: Array<Array<number>>) => {
+        return ranges.reduce((data, row, idx) => {
+            if(idx === 0) {
+                data.push(row.at(0));
+                return data
+            }
+            if(idx === 1) return data;
+            const mapped = positions.map((postition, idx) => row.at(postition));
+            mapped.forEach(m => data.push(m))
+            return data;
+        }, [])
+    }
+
+    export const getRange = (values: Array<Array<string>>, positions: Array<Array<number>>) => {
+        const upperY = positions.at(0) - 1;
+        const lowerY = positions.at(1) - 1;
+        const prevRange = values.slice(upperY);
+        const range = prevRange.slice(0, lowerY - upperY);
+        return range;
+    }
+
     type HeadingPositions = { count: number, x: Array<Array<string>>, y: Array<Array<string>> }
     type HeadingXY = {
         nombre: HeadingPositions,
         documento: HeadingPositions,
         fechadeagendamiento: HeadingPositions,
         totalsesiones: HeadingPositions
-    }
-   /* export const enrichLowerLimit = (headingsXY: HeadingXY, lowerLimitTable: Array<number>) => {
-        lowerLimitTable.reduce((acc, lowerLimit) => {
-            lowerLimit
-            return acc;
-        }, headingsXY )
-    }
-*/
-    export const createTable = (data: Array<Array<string>>, limits: { x: number, y: number }) => {
-        const tempData = data.slice(limits.y - 1);
-        return tempData.map((row, idx) => {
-            return row.slice(0, limits.x + 1);
-        })
     }
 
     export const getHeaderXY = (data: Array<Array<string>>, headerToLookFor: string | Date) => {

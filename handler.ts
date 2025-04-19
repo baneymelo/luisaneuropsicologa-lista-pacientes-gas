@@ -42,7 +42,7 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
     console.log(headerlowerLimits)
 
     // headers xy positions
-    const headingsXY = headings.reduce((acc, header) => {
+    const headers = headings.reduce((acc, header) => {
         const key = header.toLowerCase().replaceAll(" ","");
         const value = Module.getHeaderXY(values, header);
         acc.limits.forEach((limit, idx) => {
@@ -51,10 +51,15 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
         acc[key] = value;
         return acc;
     }, {headers: {}, limits: headerlowerLimits} );
-    console.log(headingsXY.nombre)
+    console.log(headers.nombre)
 
 
-    //console.log(mergedHeader.headers.nombre)
+    // determine range data
+    const ranges = Module.getRange(values, headers.nombre.y.at(0));
+    //console.log(ranges);
+
+    const dataRanges = Module.getDataRange(ranges, headers.nombre.x.at(0));
+    console.log(dataRanges);
 
     //const enrichLowerLimit = Module.enrichLowerLimit(headingsXY, LOWER_LIMIT);
     //console.log(enrichLowerLimit);
