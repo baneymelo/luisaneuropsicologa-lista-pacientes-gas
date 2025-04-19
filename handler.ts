@@ -36,20 +36,26 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
     const inputSheet: SpreadSheet = Module.getInputSheet(spreadsSheetId, sheetName);
     const values = Module.getDataValues(inputSheet);
 
-    // dataValues
-    //console.log(values)
+    // determinate lower limits of each header
+    const lowerLimits = Module.getHeaderXY(values, "TOTAL ATENCIONES")
+    const headerlowerLimits = lowerLimits.y.map((loweLimit, idx) => idx % 2 === 0 ? loweLimit : []).flat();
+    console.log(headerlowerLimits)
 
+    // headers xy positions
     const headingsXY = headings.reduce((acc, header) => {
         const key = header.toLowerCase().replaceAll(" ","");
         const value = Module.getHeaderXY(values, header);
+        acc.limits.forEach((limit, idx) => {
+            value.y.at(idx).push(limit)
+        })
         acc[key] = value;
         return acc;
-    }, {} );
+    }, {headers: {}, limits: headerlowerLimits} );
+    console.log(headingsXY.nombre)
 
-    // determinate lowe limit of each header
-    static const LOWER_LIMIT = 10;
-    const ll = Module.getHeaderXY(values, "TOTAL ATENCIONES")
-    console.log(ll)
+
+    //console.log(mergedHeader.headers.nombre)
+
     //const enrichLowerLimit = Module.enrichLowerLimit(headingsXY, LOWER_LIMIT);
     //console.log(enrichLowerLimit);
 

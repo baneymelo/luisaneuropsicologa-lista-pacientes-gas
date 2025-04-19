@@ -1,13 +1,6 @@
 
 namespace Module {
 
-    export const createTable = (data: Array<Array<string>>, limits: { x: number, y: number }) => {
-        const tempData = data.slice(limits.y - 1);
-        return tempData.map((row, idx) => {
-            return row.slice(0, limits.x + 1);
-        })
-    }
-
     export const transpose = (data: Array<Array<string>>): Array<Array<string>> => (
         data.reduce((prev, next) =>
             next.map((item, i) =>
@@ -22,8 +15,18 @@ namespace Module {
         fechadeagendamiento: HeadingPositions,
         totalsesiones: HeadingPositions
     }
-    export const enrichLowerLimit = (headingsXY: HeadingXY, LOWER_LIMIT: number) => {
-
+   /* export const enrichLowerLimit = (headingsXY: HeadingXY, lowerLimitTable: Array<number>) => {
+        lowerLimitTable.reduce((acc, lowerLimit) => {
+            lowerLimit
+            return acc;
+        }, headingsXY )
+    }
+*/
+    export const createTable = (data: Array<Array<string>>, limits: { x: number, y: number }) => {
+        const tempData = data.slice(limits.y - 1);
+        return tempData.map((row, idx) => {
+            return row.slice(0, limits.x + 1);
+        })
     }
 
     export const getHeaderXY = (data: Array<Array<string>>, headerToLookFor: string | Date) => {
