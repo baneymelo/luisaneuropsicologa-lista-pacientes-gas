@@ -15,11 +15,22 @@ const handler = (app: string) => {
 }
 */
 
+const utils = {
+    enrichX: (x1, x2) => {
+        const xLimit = x1.map((x1_, idx) => {
+            const x2_ = x2[idx];
+            return [x1_, x2_];
+        });
+        return xLimit;
+        }
+}
+
+
 const listadoPacientes = () => {
     const spreadsSheetId = "1ZTgWI7qjW31vuiML2ODSX0FQuo-mtQ-L0-Vd7eLw2kw";
     const sheetName = "INPUT";
-    const headings = ["NOMBRE", "DOCUMENTO", "FECHA DE AGENDAMIENTO", "TOTAL SESIONES"];
-    const sheetData = spreadsSheetProcessor(spreadsSheetId, sheetName, headings);
+    const headings = ["NOMBRE", "TOTAL SESIONES"];
+    const sheetData = spreadsSheetProcessor(spreadsSheetId, sheetName, headings, utils);
     const textProps = {
         headingTitle: "LISTADO DE PACIENTES"
     }
@@ -31,6 +42,7 @@ const listadoPacientes = () => {
 const spreadsSheetProcessor = (spreadsSheetId: string,
                                sheetName: string,
                                headings: string,
+                               utils: any
     ) => {
     console.log("Processor::starting..");
     const inputSheet: SpreadSheet = Module.getInputSheet(spreadsSheetId, sheetName);
@@ -50,16 +62,52 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
         })
         acc[key] = value;
         return acc;
-    }, {headers: {}, limits: headerlowerLimits} );
+    }, { limits: headerlowerLimits });
     console.log(headers.nombre)
+    console.log(headers.totalsesiones)
 
+    // total sesiones as rectangular limit
+    const x1 = headers.nombre.x.flat();
+    const x2 = headers.totalsesiones.x.flat();
+    const x = utils.enrichX(x1, x2);
+    const y = headers.nombre.y;
+    console.log(x);
+    console.log(x.flat());
+
+    /*const tables = xRightLimit.reduce((acc, xLimit, limitIdx) => {
+        const newRow = [];
+        xLimit.forEach((x2, idx) => {
+            const x1 = acc.headers.x.at(limitIdx).at(idx);
+            newRow.push(x1, x2)
+            acc._.push(newArr);
+        }
+
+
+        return acc._
+    }, { headers });*/
 
     // determine range data
     const ranges = Module.getRange(values, headers.nombre.y.at(0));
-    //console.log(ranges);
+    console.log(ranges.length);
 
     const dataRanges = Module.getDataRange(ranges, headers.nombre.x.at(0));
-    console.log(dataRanges);
+    //console.log(dataRanges);
+
+
+
+
+
+    /*
+    pipe to get array of data.
+    inputSheet -> values
+
+    values, TOTAL ATENCIONES -> prelimitLowers (curry)
+    prelimitLowers -> limitLowers
+
+    values, limitLowers, headings -> headers (curry)
+
+
+    */
 
     //const enrichLowerLimit = Module.enrichLowerLimit(headingsXY, LOWER_LIMIT);
     //console.log(enrichLowerLimit);

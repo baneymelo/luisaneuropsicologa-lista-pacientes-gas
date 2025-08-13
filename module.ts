@@ -49,6 +49,22 @@ namespace Module {
             }, { count: 0, x: [], y: [] })
     }
 
+    //TOD trying to make a currying
+    /*const curryHeader = fn => y => x => fn(x,y);
+
+    const totalAtenciones = curryHeader(getHeaderXY, "TOTAL ATENCIONES");
+
+
+    const getHeadersPositions = pipe(
+        totalAtenciones
+    )
+
+    getHeadersPositions(data)
+
+    const pipe = <T>(fn: (a) => T, ...fns: Array<(a: T) => T>) =>
+        fns.reduce((prevFn, nextFn) => value => nextFn(prevFn(value)), fn)
+*/
+
     const recursiveBase = (headerToLookFor, idx, row, acc) => {
         const i = row.indexOf(headerToLookFor, idx);
         if(i !== -1) {
