@@ -37,16 +37,16 @@ namespace Module {
         totalsesiones: HeadingPositions
     }
 
-    export const getHeaderXY = (data: Array<Array<string>>, headerToLookFor: string | Date) => {
+    export const getHeaderXY = (data: Array<Array<string>>, headerToLookFor: string[]) => {
             return data.reduce((acc, row) => {
                 acc.count++;
-                const accRow = recursiveBase(headerToLookFor, 0, row, []);
+                const accRow = recursiveBase(row, headerToLookFor, 0, []);
                 if(accRow.length !== 0) {
-                    acc.x.push([...accRow]);
-                    acc.y.push([acc.count - 1]);
+                    acc.tables.push([...accRow]);
+                    acc.tables.push(acc.count - 1);
                 }
                 return acc;
-            }, { count: 0, x: [], y: [] })
+            }, { count: 0, tables: [] })
     }
 
     //TOD trying to make a currying
@@ -65,13 +65,22 @@ namespace Module {
         fns.reduce((prevFn, nextFn) => value => nextFn(prevFn(value)), fn)
 */
 
-    const recursiveBase = (headerToLookFor, idx, row, acc) => {
-        const i = row.indexOf(headerToLookFor, idx);
+    export const recursiveBase = (row, headerToLookFor, position, headerIdx, acc) => {
+        const newHeaderIdx = headerIdx === 2 ? 0 : headerIdx;
+        const newPosition = position;
+        const newHeaderToLookFor = headerToLookFor.at(newHeaderIdx);
+        const i = row.indexOf(newHeaderToLookFor, newPosition);
+        console.log({newHeaderToLookFor, i, newPosition});
+        if(i === row.length - 1){
+            console.log("exit")
+            return acc;
+        }
         if(i !== -1) {
             acc.push(i);
-            return recursiveBase(headerToLookFor, i + 1, row, acc);
+            newHeaderIdx++;
+            newPosition = i - 1;
         }
-        return acc;
+        return recursiveBase(row, headerToLookFor, newPosition + 1, newHeaderIdx + 1, acc);
     }
 
     export type Patient = string[];

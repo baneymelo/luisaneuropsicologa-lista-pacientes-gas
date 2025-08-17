@@ -25,11 +25,50 @@ const utils = {
         }
 }
 
+const getUniques = (array: number[]) => {
+    const set = new Set(array);
+    return [...set];
+}
+
+const recursiveBase = (acc, headerToLookFor, headerIdx, rowPosition, row) => {
+    const newHeaderIdx = headerIdx === 2 ? 0 : headerIdx;
+    const newRowPosition = rowPosition;
+    const newHeaderToLookFor = headerToLookFor.at(newHeaderIdx);
+    const i = row.indexOf(newHeaderToLookFor, newRowPosition);
+    if(newRowPosition === row.length - 1){
+        return acc;
+    }
+    if(i !== -1) {
+        acc.push(i);
+        newHeaderIdx++;
+        newRowPosition = i - 1;
+    }
+    return recursiveBase(acc, headerToLookFor, newHeaderIdx, newRowPosition + 1, row);
+}
+
+const isValidXPosition = (xPositions: number[]) => xPositions.length % 2 === 0;
+
+const composeCallback = (...functions) => (header) => {
+    return functions.reduceRight((currentHeader, currentFun) => {
+        return currentFun(currentHeader);
+    }, header );
+}
+
+const separeteA1Notation = (notation: string) => {
+    const match = notation.match(/([A-Z]+)(\d+)/);
+    const column = match[1]
+    const row = parseInt(match[2], 10)
+    debugger
+    return [column, row]
+}
+
+const redifineA1Notation = (arr: Array<string, number>) => `${arr.at(0)}${arr.at(1)-1}`
+
 
 const listadoPacientes = () => {
     const spreadsSheetId = "1ZTgWI7qjW31vuiML2ODSX0FQuo-mtQ-L0-Vd7eLw2kw";
     const sheetName = "INPUT";
-    const headings = ["NOMBRE", "TOTAL SESIONES"];
+    const headings = ["HORA", "TOTAL ATENCIONES"];
     const sheetData = spreadsSheetProcessor(spreadsSheetId, sheetName, headings, utils);
     const textProps = {
         headingTitle: "LISTADO DE PACIENTES"
@@ -46,128 +85,70 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
     ) => {
     console.log("Processor::starting..");
     const inputSheet: SpreadSheet = Module.getInputSheet(spreadsSheetId, sheetName);
-    const values = Module.getDataValues(inputSheet);
-
-    // determinate lower limits of each header
-    const lowerLimits = Module.getHeaderXY(values, "TOTAL ATENCIONES")
-    const headerlowerLimits = lowerLimits.y.map((loweLimit, idx) => idx % 2 === 0 ? loweLimit : []).flat();
-    console.log(headerlowerLimits)
-
-    // headers xy positions
-    const headers = headings.reduce((acc, header) => {
-        const key = header.toLowerCase().replaceAll(" ","");
-        const value = Module.getHeaderXY(values, header);
-        acc.limits.forEach((limit, idx) => {
-            value.y.at(idx).push(limit)
-        })
-        acc[key] = value;
-        return acc;
-    }, { limits: headerlowerLimits });
-    console.log(headers.nombre)
-    console.log(headers.totalsesiones)
-
-    // total sesiones as rectangular limit
-    const x1 = headers.nombre.x.flat();
-    const x2 = headers.totalsesiones.x.flat();
-    const x = utils.enrichX(x1, x2);
-    const y = headers.nombre.y;
-    console.log(x);
-    console.log(x.flat());
-
-    /*const tables = xRightLimit.reduce((acc, xLimit, limitIdx) => {
-        const newRow = [];
-        xLimit.forEach((x2, idx) => {
-            const x1 = acc.headers.x.at(limitIdx).at(idx);
-            newRow.push(x1, x2)
-            acc._.push(newArr);
-        }
-
-
-        return acc._
-    }, { headers });*/
-
-    // determine range data
-    const ranges = Module.getRange(values, headers.nombre.y.at(0));
-    console.log(ranges.length);
-
-    const dataRanges = Module.getDataRange(ranges, headers.nombre.x.at(0));
-    //console.log(dataRanges);
-
-
-
-
+    const data = Module.getDataValues(inputSheet);
 
     /*
-    pipe to get array of data.
-    inputSheet -> values
+    // table dimensions on x
+    const recursiveBaseResult = data.reduce((acc, row, idx) => {
+        const table = recursiveBase([], headings, 0, 0, row);
+        if (table.length > 0) {
+            acc.push(table);
+        }
+        return acc;
+    });
+    //console.log(recursiveBaseResult);
 
-    values, TOTAL ATENCIONES -> prelimitLowers (curry)
-    prelimitLowers -> limitLowers
+    // validate if xPositions are valid pair
+    const protoXPositions = recursiveBaseResult.filter(r => Array.isArray(r));
+    const xPositionsValidationResult = protoXPositions.reduce((acc, xPosition) => {
+        if (isValidXPosition(xPosition)) {
+            acc.xPositionsUngrouped.push(xPosition);
+            return acc;
+        }
+        acc.isXPositionsValid = false;
+        return acc;
 
-    values, limitLowers, headings -> headers (curry)
+    }, {xPositionsUngrouped: [], isXPositionsValid: true});
 
+    const {xPositionsUngrouped, isXPositionsValid} = xPositionsValidationResult;
 
-    */
+    if (!isXPositionsValid) return;
 
-    //const enrichLowerLimit = Module.enrichLowerLimit(headingsXY, LOWER_LIMIT);
-    //console.log(enrichLowerLimit);
+    // group xPositions
+    const xPositionsGrouped = xPositionsUngrouped.map((xPosition, idx) => {
+        const limit = xPosition.length - 1;
+        const pairs = [];
+        for (let i = 0; i < limit; i += 2) {
+            pairs.push([xPosition[i], xPosition[i + 1]]);
+        }
+        return pairs;
+    }).flat();
 
-    // create table of each header
+    //console.log(xPositionsGrouped)*/
 
+    const ss = SpreadsheetApp.openById(spreadsSheetId)
 
+    const getA1Notation = (occurences) => occurences.map(_ => _.getA1Notation());
+    const getAllOccurrences = (header: RegExp) => {
+        const textFinder = ss.createTextFinder(header).matchEntireCell(true);
+        return textFinder.findAll()
+    };
 
-    /*const limits = {
-        x: totalSesionsXY.x.flat().at(0),
-        y: totalSesionsXY.y.flat().at(0)
-    }*/
-    // const tableOne = Module.createTable(values, limits);
-    // console.log(tableOne)
+    const composeNotation = (header) => composeCallback(
+        getA1Notation,
+        getAllOccurrences
+    )(header)
 
-    // transposing dataValues
-    // const transposed = Module.transpose(values);
+    const composeRenotation = (notation) => composeCallback(
+        redifineA1Notation,
+        separeteA1Notation
+    )(notation)
 
+    const headingNotations = headings.map(composeNotation);
+    //console.log(headingNotations);
 
+    const topLeft = headingNotations.at(0);
+    const bottomRight = headingNotations.at(1); // TODO continue here. get the dimension of tables and filter just the odds
+    const notationRanged = topLeft.map(composeRenotation);
 
-    /*const fortnightlyNotations = Module.fortnightlyNotationsBuilder(inputSheet, "TOTAL ATENCIONES");
-    const documentName = Module.getNameDocument(inputSheet, fortnightlyNotations[0], fortnightlyNotations[fortnightlyNotations.length - 1]);
-    const patients = Module.getPatients(fortnightlyNotations, inputSheet);
-    const depuredData = Module.depureData(patients.data);
-    return {
-        table: depuredData,
-        documentName
-    };*/
 }
-
-
-/*
-* 1. get values.
-* 2. sort data.
-*    get XY index of TOTAL SESIONES.
-* 3.
-* */
-
-const documentProcessor = (sheetData: string[][], textProps: object): Blob => {
-    const doc = Module.createDocument(sheetData.documentName);
-
-    const text = doc.getBody().appendParagraph(textProps.headingTitle + '\n');
-    text.setBold(true);
-    text.setFontSize(12);
-    text.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-
-    const table = doc.appendTable(sheetData.table);
-    table.setBold(false);
-    table.setFontSize(10);
-
-    //return doc.getUrl();
-    return doc;
-}
-
-const gmailProcessor = (doc: Document) => {
-    const file = DriveApp.getFileById(doc.getId());
-    const attachments = [file.getBlob()]
-   // const attachements = [file.getAs(MimeType.MICROSOFT_WORD)]
-    const options = { attachments }
-    GmailApp.sendEmail("luisamontoya.neuropsi@gmail.com", "Listado de pacientes", "Listado de pacientes", options);
-}
-
-
