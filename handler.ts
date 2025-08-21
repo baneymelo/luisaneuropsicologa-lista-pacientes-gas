@@ -244,24 +244,32 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
         return [date, dataRegionNotation]
     }
 
-    const getTotalSesionesRangeNotation = (notation) => {
-        const [horaNotation, sumFormulaNotation] = notation.split(":");
+    const getSumFormulaNotationCell: Array<Range[], string> = (notation: string[][]) => {
+        const [_, rangeNotation] = notation;
+        const [_, sumFormulaNotation] = rangeNotation.split(":");
+        const cell = ss.getRange(sumFormulaNotation);
+        return [cell, rangeNotation, notation]
+    }
+
+    const getTotalSesionesNotationRange = (cellNotation: Array<Range[], string, string[][]>) => {
+        const [cell, sumNotationCell, notation] = cellNotation;
+        const [horaNotation, sumFormulaNotation] = sumNotationCell.split(":");
         const headersRangeNotation = ss.getRange(horaNotation).getDataRegion(SpreadsheetApp.Dimension.COLUMNS).getA1Notation();
         const [_, totalSesionesNotation] = headersRangeNotation.split(":");
         const sumFormulaRange = ss.getRange(sumFormulaNotation);
         const sumFormulaRow = sumFormulaRange.getRow();
         const sumFormulaColumn = sumFormulaRange.getColumn();
         const upperLimitSumFormula = ss.getDataRange().getCell(sumFormulaRow - 1, sumFormulaColumn).getA1Notation();
-        return totalSesionesNotation + ":" + upperLimitSumFormula;
+        const totalSesionesNotationRange = totalSesionesNotation + ":" + upperLimitSumFormula;
+        return [cell, totalSesionesNotationRange, notation]
     }
 
-    const isValidTable = (notation) => {
-        const [_, sumFormulaNotation] = notation.split(":");
-        const cell = ss.getRange(sumFormulaNotation);
-        const sumFormulaRange = getTotalSesionesRangeNotation(notation)
-        const range = cell.setFormula(`=SUM(${sumFormulaRange})`);
+    const isValidTable = (cellSumFormulaRangeNotation: Array<Range[], string, string[][]>) => {
+        const [cell, sumFormulaRangeNotation, notation] = cellSumFormulaRangeNotation
+        const range = cell.setFormula(`=SUM(${sumFormulaRangeNotation})`);
         const value = range.getValue();
-        return value > 0;
+        cell.setValue("");
+        return value > 0 ? notation : [];
     }
 
     const setFilter = (notation) => { // looks like doesnt works as expected
@@ -272,10 +280,16 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
         filter.setColumnFilterCriteria(column, criteria);
     }
 
+    const composeValidTable = (notations) => composeCallback(
+        isValidTable,
+        getTotalSesionesNotationRange,
+        getSumFormulaNotationCell
+    )(notations)
+
     const topLeftNotations = composeNotation(topLeftHeader);
     const dataRegionsNotations = topLeftNotations.map(getDataRegionNotation);
     const dateAndNotation = dataRegionsNotations.map(separateDate);
-    const dateAndNotationValid = dateAndNotation.map(notation => isValidTable(notation.at(1)));
+    const dateAndNotationValid = dateAndNotation.map(composeValidTable);
     console.log(dateAndNotationValid)
     //console.log(dateAndNotation.at(0).at(1))
     //setFilter(dateAndNotation.at(0).at(1));
