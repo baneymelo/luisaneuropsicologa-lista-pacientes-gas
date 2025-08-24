@@ -264,7 +264,7 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
         return [cell, totalSesionesNotationRange, notation]
     }
 
-    const isValidTable = (cellSumFormulaRangeNotation: Array<Range[], string, string[][]>) => {
+    const setValidTables = (cellSumFormulaRangeNotation: Array<Range[], string, string[][]>) => {
         const [cell, sumFormulaRangeNotation, notation] = cellSumFormulaRangeNotation
         const range = cell.setFormula(`=SUM(${sumFormulaRangeNotation})`);
         const value = range.getValue();
@@ -277,49 +277,76 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
         const filter = range.createFilter();
         const column = range.getLastColumn();
         const criteria = SpreadsheetApp.newFilterCriteria().whenNumberGreaterThan(0).build()
-        filter.setColumnFilterCriteria(column, criteria);
+        return filter.setColumnFilterCriteria(column, criteria);
+    }
+
+    const dateFormated = (date: Date) => new Date(date).toLocaleDateString('en-GB');
+
+    const filterDataByHeadersIndex = (range: Range[]) => {
+        const values = range.getValues();
+        const numRows = range.getNumRows();
+        const startRow = range.getRow();
+        const visibleData = [];
+
+        const nombreIdx = values.at(0).indexOf('NOMBRE');
+        const documentoIdx = values.at(0).indexOf('DOCUMENTO');
+        const totalSesionesIdx = values.at(0).indexOf('TOTAL SESIONES');
+
+        const preData = values.filter((v, i) => v.at(totalSesionesIdx) > 0);
+        const data = preData.map(r => [r.at(nombreIdx), r.at(documentoIdx), r.at(totalSesionesIdx)]);
+        return data;
     }
 
     const composeValidTable = (notations) => composeCallback(
-        isValidTable,
+        setValidTables,
         getTotalSesionesNotationRange,
         getSumFormulaNotationCell
     )(notations)
+
+    const getDataValues = (dateAndnotation: string[][], dateFormated) => {
+        const [date, notation] = dateAndnotation;
+        const cellDate = ss.getRange(date);
+        const dateValue = cellDate.setNumberFormat("dd/MM/yyyy").getValue();
+        const dateFormatted = dateFormated(dateValue);
+
+        const range = ss.getRange(notation);
+        const data = filterDataByHeadersIndex(range)
+        const dataValues = data.map(_ => [..._, dateFormatted]);
+        return dataValues;
+    }
+
+    const groupByDocumento = (acc, row) => {
+        const key = row[1];
+        if(!acc[key]){
+            acc[key] = row;
+        }else{
+            acc[key][2] += row[2];
+        }
+        return acc;
+    }
+
+    const getTables = (values: string[][], groupByDocumento) => {
+        const tables = [];
+        for (const rows of values) {
+            const preTable = rows.reduce(groupByDocumento, {})
+            tables.push(Object.values(preTable));
+        }
+        return tables;
+    }
 
     const topLeftNotations = composeNotation(topLeftHeader);
     const dataRegionsNotations = topLeftNotations.map(getDataRegionNotation);
     const dateAndNotation = dataRegionsNotations.map(separateDate);
     const dateAndNotationValid = dateAndNotation.map(composeValidTable);
-    console.log(dateAndNotationValid)
-    //console.log(dateAndNotation.at(0).at(1))
-    //setFilter(dateAndNotation.at(0).at(1));
-
-    //const _ = ss.getRange(dateAndNotation.at(0).at(1)).getValues();
-    //console.log(_)
-
-
-    //const newDataRegionsNotations = setFilter(dataRegionsNotations.at(0))
-    //console.log(newDataRegionsNotations)
-    /*console.log(
-        ss.getRange(topLeftNotation)
-            .getDataRegion()
-            .getA1Notation()
-    );*/
-    /*const r = ss.getDataRange();
-    //console.log(r.getValues());
-    const n = r.getCell(5, 14).getA1Notation();
-    console.log(n);*/
-
-
-    /*const range = ss.getRange(a1Notation[0])
-    const values = range.getValues();
-    console.log(values)*/
-
+    const dateAndNotationFiltered = dateAndNotationValid.filter(n => n.length > 0);
+    const dataValues = dateAndNotationFiltered.map(n => getDataValues(n, dateFormated));
+    const tables = getTables(dataValues, groupByDocumento).flat();
+    return tables;
 }
 
 
 /*
- FUNCTIONS
+ NOTES
 setNumberFormat(numberFormat) -> to set date format
 getCell(row, column) -> to go to a specific cell
 getColumn(), getRow() -> to get the position
