@@ -134,6 +134,7 @@ const documentProcessor = (sheetData: string[][], tableHeaders: string[], create
     text.setFontSize(12);
     text.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
 
+    sheetData.unshift(tableHeaders);
     const table = doc.appendTable(sheetData);
     //table.appendTableRow(sheetData)
     table.setBold(false);
@@ -330,7 +331,7 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
         const totalSesionesIdx = values.at(0).indexOf('TOTAL SESIONES');
 
         const preData = values.filter((v, i) => v.at(totalSesionesIdx) > 0);
-        const data = preData.map(r => [r.at(nombreIdx), r.at(documentoIdx).toString(), r.at(totalSesionesIdx)]);
+        const data = preData.map(r => [r.at(nombreIdx), r.at(documentoIdx), r.at(totalSesionesIdx)]);
         return data;
     }
 
@@ -371,6 +372,13 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
         }
         return tables;
     }
+    const getSumTotalSesiones = (tables: string[][]) => {
+        const sumTotalSesiones = tables.reduce((acc, row) => {
+            const sum = ~~row[2];
+            return acc + sum;
+        }, 0);
+        return ["", "", sumTotalSesiones.toString(), ""];
+    }
 
     const topLeftNotations = composeNotation(topLeftHeader);
     const dataRegionsNotations = topLeftNotations.map(getDataRegionNotation);
@@ -379,6 +387,8 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
     const dateAndNotationFiltered = dateAndNotationValid.filter(n => n.length > 0);
     const dataValues = dateAndNotationFiltered.map(n => getDataValues(n, dateFormated));
     const tables = getTables(dataValues, groupByDocumento).flat();
+    const sumTotalSesiones = getSumTotalSesiones(tables);
+    tables.push(sumTotalSesiones);
     return tables;
     console.log("spreadsSheetProcessor::finish");
 }
