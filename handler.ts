@@ -105,6 +105,46 @@ const setA1Notation = (tl, br) => {
 };
 
 
+const createDocumentName = (date: string, baseName: string) => {
+    const baseDay = date.slice(0,2);
+    const fortnightlyRight = date.slice(3);
+    if(~~baseDay <= 15){
+        const fortnightlyStart = `01/${fortnightlyRight}`;
+        const fortnightlyEnd = `15/${fortnightlyRight}`;
+        return `${baseName} ${fortnightlyStart} - ${fortnightlyEnd}`;
+    }
+    const today = new Date();
+    const month = today.getMonth();
+    const year = today.getFullYear();
+    const lastDayDate = new Date(year, month, 0);
+    const lastDayOfTheMonth = lastDayDate.getDate().toString();
+    const fortnightlyEnd = `${lastDayOfTheMonth}/${fortnightlyRight}`;
+    return `${baseName} 16/${fortnightlyRight} - ${fortnightlyEnd}`;
+}
+
+
+const documentProcessor = (sheetData: string[][], tableHeaders: string[], createDocumentName: (date: string, baseName: string) => string): Blob => {
+    console.log("documentProcessor::start");
+    const date = sheetData[1][3];
+    const documentName = createDocumentName(date, "LISTADO PACIENTES");
+    const doc = Module.createDocument(documentName);
+
+    const text = doc.getBody().appendParagraph("LISTADO PACIENTES" + '\n');
+    text.setBold(true);
+    text.setFontSize(12);
+    text.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+
+    const table = doc.appendTable(sheetData);
+    //table.appendTableRow(sheetData)
+    table.setBold(false);
+    table.setFontSize(10);
+
+    //return doc.getUrl();
+    return doc;
+    console.log("documentProcessor::end");
+}
+
+
 
 const listadoPacientes = () => {
     const spreadsSheetId = "1ZTgWI7qjW31vuiML2ODSX0FQuo-mtQ-L0-Vd7eLw2kw";
@@ -112,13 +152,10 @@ const listadoPacientes = () => {
     const topLeftHeader = "HORA";
     const limits = ["HORA", "TOTAL SESIONES", "TOTAL ATENCIONES"];
     const headers = ["NOMBRE", "DOCUMENTO", "TOTAL SESIONES"];
+    const tableHeaders = ["NOMBRE", "DOCUMENTO", "TOTAL SESIONES", "FECHA"];
     const sheetData = spreadsSheetProcessor(spreadsSheetId, sheetName, topLeftHeader, limits, headers, utils);
-    const textProps = {
-        headingTitle: "LISTADO DE PACIENTES"
-    }
-    /*sheetData.table.unshift(tableHeadings);
-    const doc = documentProcessor(sheetData, textProps);
-    gmailProcessor(doc);*/
+    const doc = documentProcessor(sheetData, tableHeaders, createDocumentName);
+    //gmailProcessor(doc);
 }
 
 const updateNotations = ([col, row], notation) => {
@@ -132,7 +169,7 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
                                headers: string,
                                utils: any
 ) => {
-    console.log("Processor::starting..");
+    console.log("spreadsSheetProcessor::start");
     const inputSheet: SpreadSheet = Module.getInputSheet(spreadsSheetId, sheetName);
     const data = Module.getDataValues(inputSheet);
 
@@ -283,7 +320,7 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
     const dateFormated = (date: Date) => new Date(date).toLocaleDateString('en-GB');
 
     const filterDataByHeadersIndex = (range: Range[]) => {
-        const values = range.getValues();
+        const values = range.getDisplayValues();
         const numRows = range.getNumRows();
         const startRow = range.getRow();
         const visibleData = [];
@@ -293,7 +330,7 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
         const totalSesionesIdx = values.at(0).indexOf('TOTAL SESIONES');
 
         const preData = values.filter((v, i) => v.at(totalSesionesIdx) > 0);
-        const data = preData.map(r => [r.at(nombreIdx), r.at(documentoIdx), r.at(totalSesionesIdx)]);
+        const data = preData.map(r => [r.at(nombreIdx), r.at(documentoIdx).toString(), r.at(totalSesionesIdx)]);
         return data;
     }
 
@@ -320,7 +357,8 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
         if(!acc[key]){
             acc[key] = row;
         }else{
-            acc[key][2] += row[2];
+            let tempTotalSesiones = ~~++row[2];
+            acc[key][2] = tempTotalSesiones.toString();
         }
         return acc;
     }
@@ -342,6 +380,7 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
     const dataValues = dateAndNotationFiltered.map(n => getDataValues(n, dateFormated));
     const tables = getTables(dataValues, groupByDocumento).flat();
     return tables;
+    console.log("spreadsSheetProcessor::finish");
 }
 
 
