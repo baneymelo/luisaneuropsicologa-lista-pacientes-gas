@@ -1,6 +1,5 @@
 import Sheet = GoogleAppsScript.Spreadsheet.Sheet;
 
-/*
 const doGet = () => HtmlService.createTemplateFromFile("page").evaluate();
 
 const handler = (app: string) => {
@@ -13,7 +12,6 @@ const handler = (app: string) => {
             return;
     }
 }
-*/
 
 const utils = {
     enrichX: (x1, x2) => {
@@ -122,31 +120,6 @@ const createDocumentName = (date: string, baseName: string) => {
     return `${baseName} 16/${fortnightlyRight} - ${fortnightlyEnd}`;
 }
 
-
-const documentProcessor = (sheetData: string[][], tableHeaders: string[], createDocumentName: (date: string, baseName: string) => string): Blob => {
-    console.log("documentProcessor::start");
-    const date = sheetData[1][3];
-    const documentName = createDocumentName(date, "LISTADO PACIENTES");
-    const doc = Module.createDocument(documentName);
-
-    const text = doc.getBody().appendParagraph("LISTADO PACIENTES" + '\n');
-    text.setBold(true);
-    text.setFontSize(12);
-    text.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
-
-    sheetData.unshift(tableHeaders);
-    const table = doc.appendTable(sheetData);
-    //table.appendTableRow(sheetData)
-    table.setBold(false);
-    table.setFontSize(10);
-
-    //return doc.getUrl();
-    return doc;
-    console.log("documentProcessor::end");
-}
-
-
-
 const listadoPacientes = () => {
     const spreadsSheetId = "1ZTgWI7qjW31vuiML2ODSX0FQuo-mtQ-L0-Vd7eLw2kw";
     const sheetName = "INPUT";
@@ -159,9 +132,6 @@ const listadoPacientes = () => {
     //gmailProcessor(doc);
 }
 
-const updateNotations = ([col, row], notation) => {
-    const a1Notation = notation.split(":");
-}
 
 const spreadsSheetProcessor = (spreadsSheetId: string,
                                sheetName: string,
@@ -393,6 +363,42 @@ const spreadsSheetProcessor = (spreadsSheetId: string,
     console.log("spreadsSheetProcessor::finish");
 }
 
+
+const documentProcessor = (sheetData: string[][], tableHeaders: string[], createDocumentName: (date: string, baseName: string) => string): Blob => {
+    console.log("documentProcessor::start");
+    const date = sheetData[1][3];
+    const documentName = createDocumentName(date, "LISTADO PACIENTES");
+    const doc = DocumentApp.create(documentName);
+
+    const text = doc.getBody().appendParagraph("LISTADO PACIENTES" + '\n');
+    text.setBold(true);
+    text.setFontSize(12);
+    text.setAlignment(DocumentApp.HorizontalAlignment.CENTER);
+
+    sheetData.unshift(tableHeaders);
+    const table = doc.appendTable(sheetData);
+    //table.appendTableRow(sheetData)
+    table.setBold(false);
+    table.setFontSize(10);
+
+    //return doc.getUrl();
+    return doc;
+    console.log("documentProcessor::end");
+}
+
+
+
+const gmailProcessor = (doc: Blob) => {
+    console.log("gmailProcessor::start");
+    const email = "luisamontoya.neuropsi@gmail.com";
+    const subject = "Listado Pacientes" + new Date().toLocaleDateString('en-GB');
+    const body = "Adjunto el listado de pacientes.";
+    GmailApp.sendEmail(email, subject, body, {
+        attachments: [doc],
+        name: 'Automated Emailer'
+    });
+    console.log("gmailProcessor::end");
+}
 
 /*
  NOTES
